@@ -13,15 +13,9 @@ def fDrag(v: numpy.array):
     """Returns the rayleigh drag force on the object"""
     return -0.5 * rho * (pi * r**2) * cD * v * numpy.linalg.norm(v)
 
-def fSpring(x: numpy.array):
-    """Returns the spring force on the object"""
-    xhat = x / numpy.linalg.norm(x)
-    springRestPos = l0 * xhat
-    return -k * (x - springRestPos)
-
 def force(x: numpy.array, v: numpy.array):
     """Returns the sum of all forces on the object"""
-    return fGravity() + fSpring(x) + fDrag(v)
+    return fGravity() + fDrag(v)
 
 def euler(xn: numpy.array, vn: numpy.array, dt: float, m: float):
     """Predicts the positon and velocity a time dt in the future using
@@ -87,6 +81,7 @@ m = 0.185 # kg
 r = 0.037 # m 
 cD = 0.4 # drag coefficient set to 0 for no drag
 g = 9.8 # gravity
+rho = 1.225
 
 tf = 10 # simulation endtime
 dt = 0.033 # s
@@ -107,6 +102,4 @@ for method in integrators:
     while t < tf:
         t = t + dt
         x, v = integrators[method](x, v, dt, m)
-        xSim.plot(x[0], x[1])
-
-
+        xSim.plot(t, x[1])

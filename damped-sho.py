@@ -52,7 +52,7 @@ def rk4(xn: numpy.array, vn: numpy.array, dt: float):
 # Environmental parameters
 g = 9.8
 rho = 1.225
-zeta = .01 # run with 1, and 2 as well
+zeta = 2 # run with 1, and 2 as well
 
 l0 = 0.5 # Natural length of spring in m
 k = pi**2 / 10 # spring constant in N/m
@@ -73,5 +73,5 @@ dt = 0.067
 
 while t <= 10:
     x, v = rk4(x, v, dt)
-    crv.plot(x[1], t)
+    crv.plot(t, x[1])
     t = t + dt
