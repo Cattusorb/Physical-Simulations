@@ -74,7 +74,7 @@ def rk4(xn: numpy.array, vn: numpy.array, dt: float, m: float):
 tSpeed = 25 # m/s
 tAngle = radians(45) # 45 degrees to radians
 x0 = numpy.array([0, 2, 0]) # starting position in m
-v0 = numpy.array([25, 0, 0])
+v0 = tSpeed * tAngle * numpy.array([cos(pi/2), sin(pi/2), 0])
 
 # Constants
 m = 0.185 # kg
@@ -83,7 +83,6 @@ cD = 0.4 # drag coefficient set to 0 for no drag
 g = 9.8 # gravity
 rho = 1.225
 
-tf = 10 # simulation endtime
 dt = 0.033 # s
 
 integrators = {'Euler': euler, 'Semi-Implicit Euler': implicitEuler, 'RK2': rk2, 'RK4': rk4}
@@ -99,7 +98,7 @@ for method in integrators:
     v = v0
     xSim.plot(t, x[1])
 
-    while t < tf:
+    while x[1] >= 0:
         t = t + dt
         x, v = integrators[method](x, v, dt, m)
         xSim.plot(t, x[1])
