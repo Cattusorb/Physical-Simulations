@@ -3,7 +3,7 @@ import numpy
 
 # Roslyn Parker
 # Phsyical Simulations
-# 13 February 2020
+# 16 February 2020
 
 def fGravity():
     """Returns the force of gravity on the object"""
