@@ -3,7 +3,7 @@ import numpy
 
 # Roslyn Parker
 # Physical Simulations
-# 16 February 2020
+# 18 February 2020
 
 def fGravity():
     """Returns the force of gravity on the object"""
@@ -21,7 +21,8 @@ def fSpring(x: numpy.array):
 
 def force(x: numpy.array, v: numpy.array):
     """Returns the sum of all forces on the object"""
-    return fGravity() + fSpring(x) + fDrag(v)
+    #return fGravity() + fSpring(x) + fDrag(v)
+    return -k * x - cD * v
 
 def f(phi: numpy.array):
     """Returns the time derivative f(phi) for a set of coupled differential
@@ -32,6 +33,13 @@ def f(phi: numpy.array):
     dphidt[0:3] = v
     dphidt[3:6] = force(x, v) / m
     return dphidt
+
+def euler(xn: numpy.array, vn: numpy.array, dt: float):
+    """Predicts the positon and velocity a time dt in the future using
+       Euler's method"""
+    xnp1 = xn + dt * vn # x(t + dt)
+    vnp1 = vn + dt * force(xn, vn) / m
+    return xnp1, vnp1
 
 def rk4(xn: numpy.array, vn: numpy.array, dt: float):
     """Predicts the position and velocity a time dt in the future using the
@@ -52,7 +60,7 @@ def rk4(xn: numpy.array, vn: numpy.array, dt: float):
 # Environmental parameters
 g = 9.8
 rho = 1.225
-zeta = 2 # run with 1, and 2 as well
+zeta = 1 # run with 1, and 2 as well
 
 l0 = 0.5 # Natural length of spring in m
 k = pi**2 / 10 # spring constant in N/m
@@ -64,14 +72,17 @@ cD = zeta * 2 * sqrt(m * k) # drag coefficient | to turn off, set to 0
 x = numpy.array([l0 / 4, -l0 - m * g / k - 0.1, 0])
 v = numpy.array([0, 0, 0])
 
-# Graph
-graph(title='damped sho', xtitle='time', ytitle='position')
-crv = gcurve(color=color.magenta)
+integrators = {'Euler': euler, 'RK4': rk4}
+# Loop over integrators
+for method in integrators:
+    # Graph
+    graph(title=method, xtitle='time', ytitle='position')
+    crv = gcurve(color=color.magenta)
 
-t = 0 
-dt = 0.067
+    t = 0 
+    dt = 0.067
 
-while t <= 10:
-    x, v = rk4(x, v, dt)
-    crv.plot(t, x[1])
-    t = t + dt
+    while t <= 10:
+        x, v = integrators[method](x, v, dt)
+        crv.plot(t, x[1])
+        t = t + dt

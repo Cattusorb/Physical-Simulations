@@ -3,7 +3,7 @@ import numpy
 
 # Roslyn Parker
 # Phsyical Simulations
-# 16 February 2020
+# 18 February 2020
 
 def fGravity():
     """Returns the force of gravity on the object"""
@@ -21,13 +21,13 @@ def euler(xn: numpy.array, vn: numpy.array, dt: float, m: float):
     """Predicts the positon and velocity a time dt in the future using
        Euler's method"""
     xnp1 = xn + dt * vn # x(t + dt)
-    vnp1 = vn + dt * force(xn, m) / m
+    vnp1 = vn + dt * force(xn, vn) / m
     return xnp1, vnp1
 
 def implicitEuler(xn: numpy.array, vn: numpy.array, dt: float, m: float):
     """Predicts the positon and velocity a time dt in the future using
        semi-implicit Euler integration"""
-    vnp1 = vn + dt * force(xn, m) / m
+    vnp1 = vn + dt * force(xn, vn) / m
     xnp1 = xn + dt * vnp1 # x(t + dt)
     return xnp1, vnp1
 
@@ -37,7 +37,7 @@ def f(phi: numpy.array):
 
     dphidt = numpy.zeros(6) # [0, 0, 0, 0, 0, 0]
     dphidt[0:3] = v #dx/dt = v
-    dphidt[3:6] = force(x, m) / m #dv/dt = F / m
+    dphidt[3:6] = force(x, v) / m #dv/dt = F / m
     return dphidt
 
 def rk2(xn: numpy.array, vn: numpy.array, dt: float, m: float):
@@ -74,7 +74,7 @@ def rk4(xn: numpy.array, vn: numpy.array, dt: float, m: float):
 tSpeed = 25 # m/s
 tAngle = radians(45) # 45 degrees to radians
 x0 = numpy.array([0, 2, 0]) # starting position in m
-v0 = tSpeed * tAngle * numpy.array([cos(pi/2), sin(pi/2), 0])
+v0 = tSpeed * numpy.array([cos(tAngle), sin(tAngle), 0])
 
 # Constants
 m = 0.185 # kg
@@ -96,9 +96,8 @@ for method in integrators:
     t = 0
     x = x0
     v = v0
-    xSim.plot(t, x[1])
 
-    while x[1] >= 0:
-        t = t + dt
+    while x[1] > 0:
+        xSim.plot(x[0], x[1])
         x, v = integrators[method](x, v, dt, m)
-        xSim.plot(t, x[1])
+        t = t + dt
