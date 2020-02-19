@@ -47,9 +47,9 @@ def rk4(xn: numpy.array, vn: numpy.array, dt: float, m: float):
 
     return xnp1, vnp1
 
-def launchFirework():
-    firework = sphere(pos=vector(0,0,0), visible=False)
-    x0 = numpy.array([0, 0, 0]) # starting position in m
+def launchFirework(start: int):
+    firework = sphere(pos=vector(start,0,start), visible=False)
+    x0 = numpy.array([start, 0, start]) # starting position in m
     v0 = fSpeed * numpy.array([cos(fAngle), sin(fAngle), 0])
     
     t = 0
@@ -57,7 +57,7 @@ def launchFirework():
     v = v0
 
     # Launch rocket to explode height, average 15-22 m
-    while x[1] <= random.randrange(15, 22):
+    while x[1] <= random.randrange(15, 30):
         rate(framerate)
         x, v = rk4(x, v, dt, m)
         firework.pos = vector(x[0], x[1], x[2])
@@ -74,7 +74,7 @@ def launchFirework():
         frags.append([fx0, fv0, frag])
 
     t = 0
-    while t < 100:
+    while t < 1:
         rate(framerate)
         for frag in frags: 
             fx = frag[0]
@@ -90,7 +90,7 @@ lw = 50
 floor = box(pos=vector(0, 0, 0), length=lw, width=lw, height=0.5, color=color.magenta)
 
 # Firework Constants
-fSpeed = 35 # m/s ~80mph
+fSpeed = 20 # m/s ~80mph
 fAngle = radians(90) # 90 degrees to radians, straight up
 
 # Constants
@@ -100,6 +100,7 @@ framerate = 60
 dt = 1.0 / framerate
 colors = [color.red, color.orange, color.yellow, color.green, color.blue, color.purple]
 
-for firework in range(0, 10):
-    print("Fire!")
-    launchFirework()
+start = [0, -20, 20, -40, 40]
+for firework in range(0, 5):
+    launchFirework(start[0])
+    start.pop(0)
