@@ -18,9 +18,17 @@ import random
 
 # Make the initial launch invisible visible=False
 
-def force(x: numpy.array, v: numpy.array):
+def fGravity():
     """Returns the force of gravity on the object"""
     return m * numpy.array([0, -g, 0])
+
+def fDrag(v: numpy.array):
+    """Returns the rayleigh drag force on the object"""
+    return -0.5 * rho * (pi * r**2) * cD * v * numpy.linalg.norm(v)
+
+def force(x: numpy.array, v: numpy.array):
+    """Returns the force of gravity on the object"""
+    return fGravity() + fDrag(v)
 
 def f(phi: numpy.array):
     x = phi[0:3]
@@ -49,6 +57,7 @@ def rk4(xn: numpy.array, vn: numpy.array, dt: float, m: float):
 
 def launchFirework(start: int):
     firework = sphere(pos=vector(start,0,start), visible=False)
+    print(firework.pos)
     x0 = numpy.array([start, 0, start]) # starting position in m
     v0 = fSpeed * numpy.array([cos(fAngle), sin(fAngle), 0])
     
@@ -57,24 +66,26 @@ def launchFirework(start: int):
     v = v0
 
     # Launch rocket to explode height, average 15-22 m
-    while x[1] <= random.randrange(15, 30):
+    while x[1] <= random.randrange(15, 60):
         rate(framerate)
         x, v = rk4(x, v, dt, m)
         firework.pos = vector(x[0], x[1], x[2])
         t = t + dt
 
     frags = []
-    fragM = 1
+    fragM = 0.05
+    r = random.randrange(5, 20)
     fragColor = random.choice(colors)
-    for angle in range(0, 361, 20):
-        speed = random.randrange(200, 500)
-        fx0 = numpy.array([0, x[1], 0]) # starting position in m
-        fv0 = speed * numpy.array([cos(angle), sin(angle), 0])
+    for angle in range(0, 361, r):
+        speed = random.randrange(5, 50, 5)
+        z = random.randrange(-5, 5)
+        fx0 = numpy.array([x[0], x[1], z])
+        fv0 = speed * numpy.array([cos(angle), sin(angle), -sin(angle)])
         frag = sphere(pos=vector(0,fx0[1],0), radius=0.2, make_trail=True, color=fragColor)
         frags.append([fx0, fv0, frag])
 
     t = 0
-    while t < 1:
+    while t < 5:
         rate(framerate)
         for frag in frags: 
             fx = frag[0]
@@ -87,20 +98,21 @@ def launchFirework(start: int):
 # Set-up Scene
 scene.forward = vector(-1, -0.5, -1)
 lw = 50
-floor = box(pos=vector(0, 0, 0), length=lw, width=lw, height=0.5, color=color.magenta)
+floor = box(pos=vector(0, 0, 0), length=lw, width=lw, height=0.5, color=color.blue)
 
 # Firework Constants
-fSpeed = 20 # m/s ~80mph
+fSpeed = 35 # m/s ~80mph
 fAngle = radians(90) # 90 degrees to radians, straight up
 
 # Constants
 g = 9.8 # gravity
 m = 4.535 # kg 
+rho = 1.225
+r = 0.075 # sphere radius in m
+cD = 6 # drag coefficient
 framerate = 60
-dt = 1.0 / framerate
-colors = [color.red, color.orange, color.yellow, color.green, color.blue, color.purple]
+dt = 5 / framerate
+colors = [color.red, color.orange, color.yellow, color.green, color.magenta, color.purple]
 
-start = [0, -20, 20, -40, 40]
-for firework in range(0, 5):
-    launchFirework(start[0])
-    start.pop(0)
+for fireworks in range(0, 5):
+    launchFirework(0)
