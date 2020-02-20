@@ -83,7 +83,7 @@ def createFrags(x: numpy.array, v: numpy.array):
         else: 
             z = random.randrange(0, 6)
         fx0 = numpy.array([x[0], x[1], z])
-        fv0 = speed * numpy.array([cos(angle), sin(angle), -sin(angle)])
+        fv0 = speed * numpy.array([cos(angle), sin(angle), -cos(angle)])
         frag = sphere(pos=vector(0,fx0[1],0), radius=0.01, make_trail=True, color=fragColor)
         frags.append([fx0, fv0, frag])
 
@@ -94,14 +94,11 @@ def explode(fragments, m):
         Explodes the fragments out in all directions
     '''
     t = 0
-    while t < 20:
+    while t < 0.5:
         rate(framerate)
-        for frag in fragments: 
-            fx = frag[0]
-            fv = frag[1]
-            fragment = frag[2]
-            fx, fv = rk4(fx, fv, dt, m)
-            fragment.pos = vector(fx[0], fx[1], fx[2])
+        for frag in fragments:
+            frag[0], frag[1] = rk4(frag[0], frag[1], dt, m)
+            frag[2].pos = vector(frag[0][0], frag[0][1], frag[0][2])
 
         t = t + dt
 
@@ -112,7 +109,7 @@ def launchFirework():
 
 # Constants
 framerate = 60
-dt = 5 / framerate
+dt = 1.0 / framerate
 colors = [color.red, color.orange, color.yellow, color.green, color.magenta, color.purple]
 
 # Environmental Constants
