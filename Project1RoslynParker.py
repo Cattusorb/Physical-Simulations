@@ -1,6 +1,5 @@
 from vpython import *
 import numpy
-import random
 
 # Roslyn Parker
 # Physical Simulations
@@ -60,7 +59,7 @@ def initialLaunch(startX: float, startZ: float):
     v = v0
 
     # Launch rocket to explode height, average 15-22 m
-    while x[1] <= random.randrange(15, 22):
+    while x[1] <= numpy.random.randint(15, 30):
         rate(framerate)
         x, v = rk4(x, v, dt, m)
         firework.pos = vector(x[0], x[1], x[2])
@@ -74,13 +73,13 @@ def createFrags(x: numpy.array, v: numpy.array):
     '''
     frags = [] # create list of frags
     fragM = 0.005 # frag mass
-    r = random.randrange(10, 20) # random step for the angle for variation
-    fragColor = random.choice(colors)
+    r = numpy.random.randint(5, 20) # random step for the angle for variation
+    fragColor = numpy.random.choice(colors)
     for angle in range(0, 361, r):
-        speed = fSpeed / 2 # fragment speed
+        speed = fSpeed # fragment speed
         fx0 = numpy.array([x[0], x[1], x[2]])
         phi = tan(fx0[0] / fx0[1])
-        fv0 = numpy.array([r * sin(angle) * cos(phi), r * sin(angle) * sin(phi), r * cos(angle)])
+        fv0 = speed * numpy.array([sin(angle) * cos(phi), sin(angle) * sin(phi), cos(angle)])
         frag = sphere(pos=vector(fx0[0],fx0[1],fx0[2]), radius=0.05,  make_trail=True, color=fragColor)
         frags.append([fx0, fv0, frag]) # add fragment into to the list
 
