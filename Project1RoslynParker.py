@@ -50,7 +50,7 @@ def initialLaunch(startX: float, startZ: float):
     '''
         Launches the firework up into the air to a certain height
     '''
-    firework = sphere(pos=vector(startX,0.5,startZ), visible=False)
+    firework = sphere(pos=vector(startX,0.5,startZ), radius=1, make_trail=True, trail_type="points")
     x0 = numpy.array([startX, 0.5, startZ]) # starting position in m
     v0 = fSpeed * numpy.array([cos(fAngle), sin(fAngle), 0])
     
@@ -64,6 +64,7 @@ def initialLaunch(startX: float, startZ: float):
         x, v = rk4(x, v, dt, m)
         firework.pos = vector(x[0], x[1], x[2])
         t = t + dt
+    firework.visible = False
 
     return x, v
 
@@ -71,15 +72,19 @@ def createFrags(x: numpy.array, v: numpy.array):
     '''
         Creates fragments to explode!
     '''
+    phi = tan(x[0] / x[1])
+
     frags = [] # create list of frags
     fragM = 0.005 # frag mass
-    r = numpy.random.randint(5, 20) # random step for the angle for variation
+    step = numpy.random.randint(5, 20) # random step for the angle for variation
     fragColor = numpy.random.choice(colors)
-    for angle in range(0, 361, r):
-        speed = fSpeed # fragment speed
+    for angle in range(0, 361, step):
+        speed = fSpeed / 4
         fx0 = numpy.array([x[0], x[1], x[2]])
-        phi = tan(fx0[0] / fx0[1])
-        fv0 = speed * numpy.array([sin(angle) * cos(phi), sin(angle) * sin(phi), cos(angle)])
+        vx = sin(angle) * cos(phi)
+        vy = sin(angle) * sin(phi)
+        vz = cos(angle)
+        fv0 = speed * numpy.array([vx, vy, vz])
         frag = sphere(pos=vector(fx0[0],fx0[1],fx0[2]), radius=0.05,  make_trail=True, color=fragColor)
         frags.append([fx0, fv0, frag]) # add fragment into to the list
 
@@ -115,7 +120,7 @@ rho = 1.225 # air density in kg/m**3
 m = 2.267 # firework mass in kg ~5lb
 r = 0.075 # firework diameter in m
 fSpeed = 35 # m/s ~80mph
-fAngle = radians(90) # straight up
+fAngle = radians(80) # slight angle
 cD = 1 # drag coefficient 
 
 # Set-up Scene
