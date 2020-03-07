@@ -83,11 +83,37 @@ class Ball(RigidBody):
         self.graphic.pos = vector(self.x[0], self.x[1], self.x[2])
         self.graphic.up = vector(cos(self.theta), sin(self.theta), 0)
 
-class Block(RigidBody):
-    '''A rectangular solid rigid body'''
-    def __init__(self, m: float, x: numpy.array, v: numpy.array, l: float, w: float, h: float):
-        super(Block, self).__init__(m, x, v)
-        self.graphic = box(pos=vector(x[0], x[1], x[2]), size=vector(l, h, w))
+class Cylinder(RigidBody):
+    '''A cylindrical solid rigid body'''
+    def __init__(self, m: float, r: float, x: numpy.array, v: numpy.array, axis: numpy.array):
+        I = m * r**2 / 2
+        super(Cylinder, self).__init__(m, I, x, v)
+        self.graphic = cylinder(pos=vector(x[0], x[1], x[2]), radius=r, axis=vector(axis[0], axis[1], axis[2]))
+
+    def render(self):
+        '''Updates the object's graphical representation to reflect 
+            it's current position'''
+        self.graphic.pos = vector(self.x[0], self.x[1], self.x[2])
+
+class Hoop(RigidBody):
+    '''A cylindrical solid rigid body'''
+    def __init__(self, m: float, r: float, x: numpy.array, v: numpy.array):
+        Rthinkness = r/10
+        I = m * (4 * (2 * r)**2 + 3 * (Rthinkness/2))
+        super(Hoop, self).__init__(m, I, x, v)
+        self.graphic = ring(pos=vector(x[0], x[1], x[2]), radius=r, thickness=Rthinkness)
+
+    def render(self):
+        '''Updates the object's graphical representation to reflect 
+            it's current position'''
+        self.graphic.pos = vector(self.x[0], self.x[1], self.x[2])
+
+class Football(RigidBody):
+    '''A cylindrical solid rigid body'''
+    def __init__(self, m: float, r: float, x: numpy.array, v: numpy.array, l: float, w: float, h: float):
+        I = 0
+        super(Football, self).__init__(m, I, x, v)
+        self.graphic = ellipsoid(pos=vector(x[0], x[1], x[2]), size=(l, h, w), radius=r)
 
     def render(self):
         '''Updates the object's graphical representation to reflect 
@@ -100,8 +126,6 @@ dt = 1.0 / framerate
 t = 0
 body = Ball(1, 3.0, numpy.array([0, 0, 0]), numpy.array([0, 0, 0]))
 body.addForce(numpy.array([0, 9.8, 0]), numpy.array([1, 0, 0]))
-
-# TO DO - Add Football, cylinder, ring
 
 # moments of inertia are different for each shape, google it
 # J (impluse) = integral of F * dt
