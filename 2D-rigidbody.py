@@ -85,54 +85,110 @@ class Ball(RigidBody):
 
 class Cylinder(RigidBody):
     '''A cylindrical solid rigid body'''
-    def __init__(self, m: float, r: float, x: numpy.array, v: numpy.array, axis: numpy.array):
+    def __init__(self, m: float, r: float, x: numpy.array, v: numpy.array):
         I = m * r**2 / 2
         super(Cylinder, self).__init__(m, I, x, v)
-        self.graphic = cylinder(pos=vector(x[0], x[1], x[2]), radius=r, axis=vector(axis[0], axis[1], axis[2]))
+        self.graphic = cylinder(pos=vector(x[0], x[1], x[2]), radius=r, axis=vector(0, 0, 1), texture=textures.stones)
 
     def render(self):
         '''Updates the object's graphical representation to reflect 
             it's current position'''
         self.graphic.pos = vector(self.x[0], self.x[1], self.x[2])
+        self.graphic.up = vector(cos(self.theta), sin(self.theta), 0)
 
 class Hoop(RigidBody):
     '''A cylindrical solid rigid body'''
     def __init__(self, m: float, r: float, x: numpy.array, v: numpy.array):
-        Rthinkness = r/10
-        I = m * (4 * (2 * r)**2 + 3 * (Rthinkness/2))
+        a = r/10
+        I = m * (4 * (2 * r)**2 + 3 * (a/2))
         super(Hoop, self).__init__(m, I, x, v)
-        self.graphic = ring(pos=vector(x[0], x[1], x[2]), radius=r, thickness=Rthinkness)
+        self.graphic = ring(pos=vector(x[0], x[1], x[2]), radius=r, thickness=a, axis=vector(0, 0, 1), texture=textures.stones)
 
     def render(self):
         '''Updates the object's graphical representation to reflect 
             it's current position'''
         self.graphic.pos = vector(self.x[0], self.x[1], self.x[2])
+        self.graphic.up = vector(cos(self.theta), sin(self.theta), 0)
 
 class Football(RigidBody):
     '''A cylindrical solid rigid body'''
-    def __init__(self, m: float, r: float, x: numpy.array, v: numpy.array, l: float, w: float, h: float):
-        I = 0
+    def __init__(self, m: float, r: float, x: numpy.array, v: numpy.array, l: float):
+        b = r * 2
+        a = r / 10
+        I = (m *  b**2 / 5) * (1 + a**2 / b**2)
         super(Football, self).__init__(m, I, x, v)
-        self.graphic = ellipsoid(pos=vector(x[0], x[1], x[2]), size=(l, h, w), radius=r)
+        self.graphic = ellipsoid(pos=vector(x[0], x[1], x[2]), length=l, radius=r, texture=textures.metal)
 
     def render(self):
         '''Updates the object's graphical representation to reflect 
             it's current position'''
         self.graphic.pos = vector(self.x[0], self.x[1], self.x[2])
+        self.graphic.up = vector(cos(self.theta), sin(self.theta), 0)
 
 framerate = 30
 dt = 1.0 / framerate
 
 t = 0
-body = Ball(1, 3.0, numpy.array([0, 0, 0]), numpy.array([0, 0, 0]))
-body.addForce(numpy.array([0, 9.8, 0]), numpy.array([1, 0, 0]))
 
-# moments of inertia are different for each shape, google it
-# J (impluse) = integral of F * dt
-# change in p = J 
+# Set up camera
+scene.forward = vector(1, -1, -5)
+scene.range = 20
+# Floor
+floorWidth = 50
+floorLength = 100
+floorThickness = 0.5
+floor = box(center=vector(0,0,0), length=floorLength, width=floorWidth, 
+height=floorThickness)
 
-while t < 5:
+#ball = Ball(1, 3.0, numpy.array([0, 0, 0]), numpy.array([0, 0, 0]))
+#ball.addForce(numpy.array([0, 9.8, 0]), numpy.array([3, 0, 0]))
+
+#cyl = Cylinder(1, 3.0, numpy.array([0, 0, 5]), numpy.array([0, 0, 0]))
+#cyl.addForce(numpy.array([0, 9.8, 0]), numpy.array([3, 0, 0]))
+
+#hoop = Hoop(1, 3.0, numpy.array([0, 0, 10]), numpy.array([0, 0, 0]))
+#hoop.addForce(numpy.array([0, 9.8, 0]), numpy.array([3, 0, 0]))
+
+'''
+When running the simulation of the three rotating objects,
+the ring looks like it is rotating the slowest and the cylinder
+looks like it is rotating the fastest, but the ball also looks like
+it is rotating at about the same speed; maybe slightly slower. 
+
+This makes sense because the ball and cylinder are solid objects and the 
+ring is somewhat like a bicycle wheel. I don't know for 
+sure why the ring looks slower, but when a bike wheel 
+is spinning the inside part of the wheel is rotating 
+slower than the tire part. This is because there is more 
+surface to be covered on the outer edge of the wheel. 
+
+I made the textures all the same for the three objects because
+when I first ran it with different textures for each, it was
+hard to tell which one was rotating faster. The textures are still
+not uniform for all objects, which may make a difference in 
+judgement, but overall I feel like the cylinder is rotating
+the fastest. 
+'''
+
+football = Football(415, 0.17, numpy.array([0, 0, 0]), numpy.array([0, 0, 0]), 0.283)
+football.addImpluse(numpy.array([20, 20, 0]), numpy.array([0, radians(40), 0]))
+
+'''
+Do you get a realistic range for your kick and a realistic tumbling action?
+'''
+
+'''while t <= 5:
     rate(framerate)
-    body.update(dt)
-    body.render()
+    ball.update(dt)
+    ball.render()
+    cyl.update(dt)
+    cyl.render()
+    hoop.update(dt)
+    hoop.render()
+'''
+while football.x[1] >= 0: 
+    rate(framerate)
+    football.update(dt)
+    football.render()
+    print(football.x)
     t = t + dt
