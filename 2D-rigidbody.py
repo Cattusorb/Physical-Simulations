@@ -2,6 +2,12 @@ from types import FunctionType
 from vpython import *
 import numpy
 
+'''
+Roslyn Parker
+Physical Simulations
+9 March 2020
+'''
+
 # Standalone functions to handle numerics
 def rk4(phin: numpy.array, dt: float, f: FunctionType):
     """Finds the state vector dt in the future using an RK4 integration step"""
@@ -117,7 +123,7 @@ class Football(RigidBody):
         a = r / 10
         I = (m *  b**2 / 5) * (1 + a**2 / b**2)
         super(Football, self).__init__(m, I, x, v)
-        self.graphic = ellipsoid(pos=vector(x[0], x[1], x[2]), length=l, radius=r, texture=textures.metal)
+        self.graphic = ellipsoid(pos=vector(x[0], x[1], x[2]), length=l, radius=r, texture=textures.metal, make_trail=True)
 
     def render(self):
         '''Updates the object's graphical representation to reflect 
@@ -138,7 +144,7 @@ floorWidth = 50
 floorLength = 100
 floorThickness = 0.5
 floor = box(center=vector(0,0,0), length=floorLength, width=floorWidth, 
-height=floorThickness)
+height=floorThickness, texture=textures.gravel)
 
 #ball = Ball(1, 3.0, numpy.array([0, 0, 0]), numpy.array([0, 0, 0]))
 #ball.addForce(numpy.array([0, 9.8, 0]), numpy.array([3, 0, 0]))
@@ -170,11 +176,22 @@ judgement, but overall I feel like the cylinder is rotating
 the fastest. 
 '''
 
-football = Football(415, 0.17, numpy.array([0, 0, 0]), numpy.array([0, 0, 0]), 0.283)
-football.addImpluse(numpy.array([20, 20, 0]), numpy.array([0, radians(40), 0]))
+football = Football(0.415, 0.17, numpy.array([0, 0, 0]), numpy.array([0, 0, 0]), 0.283)
+football.addImpluse(numpy.array([8, 8, 0]), numpy.array([0, radians(40), 0]))
 
 '''
 Do you get a realistic range for your kick and a realistic tumbling action?
+I feel like the result I got from running this simulation 
+was a little bit weird. At first, it goes up at an angle, then
+that angle decreases slightly, but it is still a straight line. Then 
+gravity takes over and it curves off back down to the ground. 
+This simulation looks very weird because it's 2 lines with a curve
+on the end. It doesn't feel as smooth as when watching an 
+actual football be kicked into the air. 
+
+I cannot really see the tumbling action that goes on 
+in this simulation because it's pretty small and there is
+quite the distance for the football to go. 
 '''
 
 '''while t <= 5:
@@ -190,5 +207,4 @@ while football.x[1] >= 0:
     rate(framerate)
     football.update(dt)
     football.render()
-    print(football.x)
     t = t + dt
