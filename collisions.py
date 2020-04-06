@@ -57,18 +57,18 @@ world = World()
 #world.bodies.append(Sphere(0.1, 0.2, numpy.array([3, 10, 0]))) # ball 1
 #world.bodies.append(Sphere(0.1, 0.2, numpy.array([3, 12, 0]))) # ball 2
 #world.boundaries.append(Boundary(numpy.array([0, 0, 0]), 10, 10)) # ball surface
-world.boundaries.append(Boundary(numpy.array([-4, 0, 0]), 7, 7, numpy.array([0, 0, 1]), numpy.array([1, 0.8, 0])))
-world.boundaries.append(Boundary(numpy.array([4, 0, 0]), 7, 7, numpy.array([0, 0, 1]), numpy.array([1, -0.8, 0])))
 
+world.boundaries.append(Boundary(numpy.array([-3, 0, 0]), 10, 7, numpy.array([0, 0, 1]), numpy.array([1, 0.7, 0])))
+world.boundaries.append(Boundary(numpy.array([3, 0, 0]), 10, 7, numpy.array([0, 0, 1]), numpy.array([1, -0.7, 0])))
 
 t = 0
 spawn = 0
-while t < 5:
+while t < 10:
     rate(framerate)
     world.update(dt)
     world.render()
-    world.removeObjectsBelow(-2)
-    if spawn % 5 == 0: 
+    world.removeObjectsBelow(-5)
+    if spawn % 5 == 0: # output spheres randomly
         world.bodies.append(Sphere(0.1, 0.2, numpy.array([numpy.random.randint(-5, 5), 5, numpy.random.randint(-5, 5)])))
     spawn += 1
     t += dt
