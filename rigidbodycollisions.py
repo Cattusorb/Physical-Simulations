@@ -4,7 +4,7 @@ from types import FunctionType
 from vpython import *
 import numpy
 
-g = 9.8 # Gravitational acceleration in m/s^2
+g = 0 # Gravitational acceleration in m/s^2
 
 # Define unit vectors for later reference
 xhat = numpy.array([1, 0, 0])
@@ -273,16 +273,19 @@ class Sphere(RigidBody):
 def sat(a: Block, b: Block) -> Tuple[bool, Contact]:
     """Performs the separating axis test to determine if two blocks overlap,
        returning the Contact"""
-    # We need to check for overlapping projections along the folliwng axes: 
-    #     xhat, yhat, zhat for body a
-    #     xhat, yhat, zhat for body b
-    #     the 9 cross product combinations of these
+    # We need to check for overlapping projections along the following axes:
+    #   xhat, yhat, zhat for body a
+    #   xhat, yhat, zhat for body b
+    #   the 9 cross product combinations of these
+
     dx = a.x - b.x
+
     minOverlap = inf
+
     edgeCollision = False
 
     # Do all three faces of a
-    for aAxis in [xhat, yhat, xhat]:
+    for aAxis in [xhat, yhat, zhat]:
         axis = a.transform(aAxis)
         distanceBetween = abs(dx.dot(axis))
         aProjection = a.projectionOn(axis)
@@ -297,8 +300,8 @@ def sat(a: Block, b: Block) -> Tuple[bool, Contact]:
             faceBlock = a
             vertexBlock = b
 
-    # Do all three faces of b
-    for bAxis in [xhat, yhat, xhat]:
+    # Now do three faces of b
+    for bAxis in [xhat, yhat, zhat]:
         axis = b.transform(bAxis)
         distanceBetween = abs(dx.dot(axis))
         aProjection = a.projectionOn(axis)
@@ -313,10 +316,11 @@ def sat(a: Block, b: Block) -> Tuple[bool, Contact]:
             faceBlock = b
             vertexBlock = a
 
-    # Do all nine edge cross product combinations
+    # Now do nine edge cross product combinations
     for aEdge in [xhat, yhat, zhat]:
         for bEdge in [xhat, yhat, zhat]:
             axis = numpy.cross(a.transform(aEdge), b.transform(bEdge))
+
             if numpy.linalg.norm(axis) < 0.001:
                 continue
 
@@ -325,6 +329,7 @@ def sat(a: Block, b: Block) -> Tuple[bool, Contact]:
             aProjection = a.projectionOn(axis)
             bProjection = b.projectionOn(axis)
             overlap = aProjection / 2 + bProjection / 2 - distanceBetween
+
             if overlap < 0:
                 return False, None
             elif overlap < minOverlap:
@@ -334,9 +339,9 @@ def sat(a: Block, b: Block) -> Tuple[bool, Contact]:
                 edgeCollision = True
 
     # If we get here, we have a collision
-    if edgeCollision: 
+    if edgeCollision:
         return True, edgeEdgeContact(a, b, aEdgeBody, bEdgeBody, minOverlap)
-    else: 
+    else:
         return True, vertexFaceContact(vertexBlock, faceBlock, minOverlap, faceNormal)
 
 def vertexFaceContact(
@@ -466,9 +471,8 @@ class Block(RigidBody):
 
     def projectionOn(self, axis: numpy.array) -> float:
         """Returns the projection (extent) of the block along an axis"""
-        # Smallest coordinate value projected into the axis
+        # Smallest coordinate value projected onto the axis
         minProjection = inf
-        # Largest coordinate value projected into the axis
         maxProjection = -inf
 
         # Get half width of object in body coordinates
@@ -476,37 +480,71 @@ class Block(RigidBody):
         dy = self.size[1] / 2
         dz = self.size[2] / 2
 
-        for x in [-dx, dx]: 
+        for x in [-dx, dx]:
             for y in [-dy, dy]:
                 for z in [-dz, dz]:
                     xvBody = numpy.array([x, y, z])
                     xvWorld = self.worldPositionOf(xvBody)
                     projection = xvWorld.dot(axis)
-                    
-                    if projection < minProjection: 
+
+                    if projection < minProjection:
                         minProjection = projection
-                    if projection > maxProjection: 
+
+                    if projection > maxProjection:
                         maxProjection = projection
+
         return maxProjection - minProjection
 
     def closestPointTo(self, other: RigidBody) -> numpy.array:
-        # TODO - implement!
-        return None
+        otherBody = self.bodyPositionOf(other.x)
+        xclose = max(-self.size[0] / 2, min(self.size[0] / 2, otherBody[0]))
+        yclose = max(-self.size[1] / 2, min(self.size[1] / 2, otherBody[1]))
+        zclose = max(-self.size[2] / 2, min(self.size[2] / 2, otherBody[2]))
+
+        close = numpy.array([xclose, yclose, zclose])
+        return self.worldPositionOf(close)
 
     def boundingRadius(self) -> float:
         # TODO - implement!
         return 0
 
     def collidesWith(self, other: RigidBody) -> Tuple[bool, Contact]:
-        # TODO - implement!
-        return False, None
+        return other.collidesWithBlock(self)
     
     def collidesWithBlock(self, other: Block) -> Tuple[bool, Contact]:
         return sat(self, other)
 
-    def collidesWithBoundary(self, boundary: Boundary) -> Tuple[bool, Contact]:
-        # TODO - implement!
+    def collidesWithBoundary(self, boundary: Boundary) -> Tuple[bool, [Contact]]:
+        # Loop over all vertices (corners) of the block. When we find that one
+        # of the vertices has made contact with the boundary, we create the
+        # Contact for that point and return it.
+
+        # Find the formula that tells you when a corner on the block has hit
+        # the boundary
+
+        # Loop over all vertices of the block
+        # When we find a collision, we return contact
+        # Get half width of object in body coordinates
+        dx = self.size[0] / 2
+        dy = self.size[1] / 2
+        dz = self.size[2] / 2
+
+        contacts = [] # Added this list
+
+        for x in [-dx, dx]:
+            for y in [-dy, dy]:
+                for z in [-dz, dz]:
+                    xvBody = numpy.array([x, y, z])
+                    xvWorld = self.worldPositionOf(xvBody)
+
+                    if (xvWorld - boundary.x).dot(boundary.normal) < 0:
+                        contacts.append(Contact(self, boundary, xvWorld, boundary.normal))
+        # Added this code
+        if len(contacts) > 0:
+            return True, contacts
+        
         return False, None
+
 
 class Boundary():
     """Represents an immovable plane"""
@@ -619,10 +657,11 @@ class World:
         # Check for boundary collisions
         for body in self.bodies:
             for boundary in self.boundaries:
-                collisionDetected, contact = body.collidesWithBoundary(boundary)
+                collisionDetected, ncontacts = body.collidesWithBoundary(boundary)
 
                 if collisionDetected:
-                    self.contacts.append(contact)
+                    for contact in ncontacts: 
+                        self.contacts.append(contact)
 
         # Collision detection
         for ia in range(len(self.bodies)):
