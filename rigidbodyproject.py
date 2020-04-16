@@ -668,22 +668,22 @@ class World:
                     for contact in ncontacts: 
                         self.contacts.append(contact)
 
-
         # Collision detection
         for ia in range(len(self.bodies)):
             for ib in range(ia+1, len(self.bodies)):
                 a = self.bodies[ia]
                 b = self.bodies[ib]
                 
-                # Code added here by Roslyn Parker
-                # If the bounding radius of the block a 
-                # is overlapping with the bounding radius of 
-                # block b then collisionDetected should be aware
+                # sum of object bounding radii
+                radiiSum = a.boundingRadius() + b.boundingRadius()
 
-                collisionDetected, contact = a.collidesWith(b)
+                if a.distanceFrom(b) < radiiSum:
+                    collisionDetected, contact = a.collidesWith(b)
 
-                if collisionDetected:
-                    self.contacts.append(contact)
+                    if collisionDetected:
+                        self.contacts.append(contact)
+                else: continue
+                
 
     def resolveCollisions(self):
         """Resolves any collisions identified in the simulation"""
