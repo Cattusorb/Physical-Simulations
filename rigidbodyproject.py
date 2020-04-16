@@ -4,6 +4,8 @@ from types import FunctionType
 from vpython import *
 import numpy
 
+# Search RAP to find where I added code :)
+
 g = 0 # Gravitational acceleration in m/s^2
 
 # Define unit vectors for later reference
@@ -674,6 +676,7 @@ class World:
                 a = self.bodies[ia]
                 b = self.bodies[ib]
                 
+                # RAP 4/16/2020 Start
                 # sum of object bounding radii
                 radiiSum = a.boundingRadius() + b.boundingRadius()
 
@@ -683,6 +686,7 @@ class World:
                     if collisionDetected:
                         self.contacts.append(contact)
                 else: continue
+                # RAP 4/16/2020 End
                 
 
     def resolveCollisions(self):
